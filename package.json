@@ -1,0 +1,37 @@
+{
+  "name": "RecommendationService",
+  "version": "1.0.0",
+  "description": "Сервис рекомендаций\r # RecommendationService",
+  "main": "app.js",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "amqplib": "^0.10.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.5",
+    "node-fetch": "^2.7.0",
+    "openfsm-auth-service-client-handler": "^1.0.3",
+    "openfsm-common": "^1.0.9",
+    "openfsm-database-connection-producer": "^1.0.0",
+    "openfsm-common-functions": "^1.0.1",
+    "openfsm-middlewares-auth-service": "^1.0.7",
+    "openfsm-logger-handler": "^1.0.0",
+    "uuid": "^8.3.2",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itksystem/RecommendationService.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/itksystem/RecommendationService/issues"
+  },
+  "homepage": "https://github.com/itksystem/RecommendationService#readme"
+}
