@@ -1,0 +1,4 @@
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-21T19:22:26.551Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-21T19:38:53.553Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-21T19:39:12.754Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-21T19:47:40.603Z"}
