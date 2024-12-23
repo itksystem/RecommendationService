@@ -34,8 +34,9 @@ exports.getLike = async (req, res) => {
         let productId = req.params.productId;
         if(!userId || !productId) throw(422);               
         let likes = await RecoHelper.getProductLikes(productId);
-        let like = await RecoHelper.getLike(userId);
-        sendResponse(res, 200, { status: like, likes });
+        let like = await RecoHelper.getLike(userId,productId);
+        console.log(productId,like,likes);
+        sendResponse(res, 200, { status: like, likes });	
        } catch (error) {
         sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
     }

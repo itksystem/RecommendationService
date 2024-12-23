@@ -8,6 +8,8 @@ require('dotenv').config();
    exports.setLike = (productId, userId, status = false) => {
     return new Promise((resolve, reject) => {      
       let result = db.query('INSERT INTO likes (product_id, user_id, status) values (?, ?, ?) ON DUPLICATE KEY UPDATE status=?', [productId, userId, status, status], (err, result) => {
+      console.log(result);
+      console.log(err);
         (err)
         ? reject(err)
         : resolve(true);
@@ -19,6 +21,8 @@ require('dotenv').config();
   exports.getProductLikes = (productId) => {
     return new Promise((resolve, reject) => {      
       let result = db.query('SELECT COUNT(product_id) as likes FROM likes WHERE product_id=?', [productId], (err, result) => {
+      console.log(result);
+      console.log(err);
         (err)
         ? reject(err)
         : resolve(result[0] ? result[0].likes : 0)
@@ -27,12 +31,15 @@ require('dotenv').config();
   };
 
   /* найти по productId */
-  exports.getLike = (userId) => {
+  exports.getLike = (userId, productId) => {
     return new Promise((resolve, reject) => {      
-      let result = db.query('SELECT COUNT(user_id) as `like` FROM likes WHERE user_id=?', [userId], (err, result) => {
+      let result = db.query('SELECT COUNT(user_id) as `like` FROM likes WHERE user_id=? and product_id=? and status=1', [userId, productId], (err, result) => {
+      console.log(userId, productId);
+      console.log(result);
+      console.log(err);
         (err)
         ? reject(err)
-        : resolve(result[0] ? Boolean(result[0].like) : false)
+        : resolve(result[0] ? result[0].like : 0)
       });
     });
   };
