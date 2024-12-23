@@ -53,10 +53,10 @@ exports.getLike = async (req, res) => {
 exports.setLike = async (req, res) => {          
     try {
         let userId = await authMiddleware.getUserId(req, res);
-        let productId = req.params.productId;
-        if(!userId || !productId) throw(422);               
-        let result = await RecoHelper.setLike(productId, userId);
-        sendResponse(res, 200, { status: result });
+        let {productId, status} = req.body;
+        if(!userId || !productId ) throw(422);               
+        let result = await RecoHelper.setLike(productId, userId, status);
+        sendResponse(res, 200, { status });
        } catch (error) {
         sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
     }

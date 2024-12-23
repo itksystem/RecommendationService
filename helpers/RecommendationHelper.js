@@ -5,9 +5,9 @@ const authMiddleware = require('openfsm-middlewares-auth-service');
 require('dotenv').config();
 
    /* Сохранить лайк */
-   exports.setLike = (productId, userId) => {
+   exports.setLike = (productId, userId, status = false) => {
     return new Promise((resolve, reject) => {      
-      let result = db.query('INSERT INTO likes (product_id, user_id) values (?, ?)', [productId, userId], (err, result) => {
+      let result = db.query('INSERT INTO likes (product_id, user_id, status) values (?, ?, ?) ON DUPLICATE KEY UPDATE status=?', [productId, userId, status, status], (err, result) => {
         (err)
         ? reject(err)
         : resolve(true);
