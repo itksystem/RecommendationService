@@ -21,7 +21,7 @@ const sendResponse = (res, statusCode, data) => {
 
 /*
  @input req/req - 
- @output profile
+ @output object
    200 - создан
    400 - оршибка данных
    422 - ошибка процесса
@@ -54,10 +54,51 @@ exports.getLike = async (req, res) => {
 exports.setLike = async (req, res) => {          
     try {
         let userId = await authMiddleware.getUserId(req, res);
-        let {productId, status} = req.body;
+        let {status} = req.body;
+        let productId = req.params.productId;
         if(!userId || !productId ) throw(422);               
         let result = await RecoHelper.setLike(productId, userId, status);
         sendResponse(res, 200, { status });
+       } catch (error) {
+        sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
+    }
+};
+
+
+
+exports.getRating = async (req, res) => {          
+    try {
+        let userId = await authMiddleware.getUserId(req, res);
+        let productId = req.params.productId;
+        if(!userId || !productId) throw(422);               
+        let rating = await RecoHelper.getRating(productId);
+        console.log(productId,rating);
+        sendResponse(res, 200, { status: true, rating : Number(rating).toFixed(1)});	
+       } catch (error) {
+        sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
+    }
+};
+
+
+exports.getReviewCount = async (req, res) => {          
+    try {
+        let userId = await authMiddleware.getUserId(req, res);
+        let productId = req.params.productId;
+        if(!userId || !productId) throw(422);               
+        let reviewCount = await RecoHelper.getReviewCount(productId);
+        sendResponse(res, 200, { status: true, reviewCount : Number(reviewCount)});	
+       } catch (error) {
+        sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
+    }
+};
+
+exports.getReviews = async (req, res) => {          
+    try {
+        let userId = await authMiddleware.getUserId(req, res);
+        let productId = req.params.productId;
+        if(!userId || !productId) throw(422);               
+        let reviews = await RecoHelper.getReviews(productId);
+        sendResponse(res, 200, { status: true, reviews});	
        } catch (error) {
         sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
     }

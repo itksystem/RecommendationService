@@ -7,7 +7,7 @@ require('dotenv').config();
    /* Сохранить лайк */
    exports.setLike = (productId, userId, status = false) => {
     return new Promise((resolve, reject) => {      
-      let result = db.query('INSERT INTO likes (product_id, user_id, status) values (?, ?, ?) ON DUPLICATE KEY UPDATE status=?', [productId, userId, status, status], (err, result) => {
+      let result = db.query('INSERT INTO product_likes (product_id, user_id, status) values (?, ?, ?) ON DUPLICATE KEY UPDATE status=?', [productId, userId, status, status], (err, result) => {
       console.log(result);
       console.log(err);
         (err)
@@ -20,7 +20,7 @@ require('dotenv').config();
   /* найти по productId */
   exports.getProductLikes = (productId) => {
     return new Promise((resolve, reject) => {      
-      let result = db.query('SELECT COUNT(product_id) as likes FROM likes WHERE product_id=?', [productId], (err, result) => {
+      let result = db.query('SELECT COUNT(product_id) as likes FROM product_likes WHERE product_id=?', [productId], (err, result) => {
       console.log(result);
       console.log(err);
         (err)
@@ -30,16 +30,55 @@ require('dotenv').config();
     });
   };
 
-  /* найти по productId */
+  /* найти like пользователя по productId */
   exports.getLike = (userId, productId) => {
     return new Promise((resolve, reject) => {      
-      let result = db.query('SELECT COUNT(user_id) as `like` FROM likes WHERE user_id=? and product_id=? and status=1', [userId, productId], (err, result) => {
+      let result = db.query('SELECT COUNT(user_id) as `like` FROM product_likes WHERE user_id=? and product_id=? and status=1', [userId, productId], (err, result) => {
       console.log(userId, productId);
       console.log(result);
       console.log(err);
         (err)
         ? reject(err)
         : resolve(result[0] ? result[0].like : 0)
+      });
+    });
+  };
+
+  /* найти рейтинг продукта по productId */
+  exports.getRating = (productId) => {
+    return new Promise((resolve, reject) => {      
+      let result = db.query('SELECT AVG(rating) as `rating` FROM product_ratings WHERE product_id=?', [productId], (err, result) => {
+      console.log(productId );
+      console.log(result);
+      console.log(err);
+        (err)
+        ? reject(err)
+        : resolve(result[0] ? result[0].rating : 0)
+      });
+    });
+  };
+
+  /* найти рейтинг продукта по productId */
+  exports.getReviewCount = (productId) => {
+    return new Promise((resolve, reject) => {      
+      let result = db.query('SELECT count(id) as `reviewCount` FROM product_reviews WHERE product_id=?', [productId], (err, result) => {
+      console.log(productId );
+      console.log(result);
+      console.log(err);
+        (err)
+        ? reject(err)
+        : resolve(result[0] ? result[0].reviewCount : 0)
+      });
+    });
+  };
+
+  exports.getReviews = (productId) => {
+    return new Promise((resolve, reject) => {      
+      let result = db.query('SELECT * FROM product_reviews WHERE product_id=?', [productId], (err, result) => {
+      console.log(err);
+        (err)
+        ? reject(err)
+        : resolve(result ? result : null)
       });
     });
   };

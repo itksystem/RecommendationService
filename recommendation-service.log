@@ -6,3 +6,7 @@
 {"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-23T20:00:39.112Z"}
 {"code":422,"level":"error","message":"Ошибка валидации данных.","service":"recommendation-service","timestamp":"2024-12-23T20:03:05.335Z"}
 {"code":422,"level":"error","message":"Ошибка валидации данных.","service":"recommendation-service","timestamp":"2024-12-23T20:03:35.971Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-29T10:27:37.277Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-29T10:34:15.028Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-29T10:34:33.037Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-29T10:34:54.106Z"}
