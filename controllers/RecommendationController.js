@@ -97,7 +97,35 @@ exports.getReviews = async (req, res) => {
         let userId = await authMiddleware.getUserId(req, res);
         let productId = req.params.productId;
         if(!userId || !productId) throw(422);               
+	console.log(productId, userId); 
         let reviews = await RecoHelper.getReviews(productId);
+	 const itemsWithMedia = await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
+	    reviews.map(async (item) => {
+	        try { // Загружаем медиафайлы для продукта          
+		  console.log(item);
+	          let mediaTtems = await await RecoHelper.getReviewImages(item.product_id, item.user_id ); 
+	          item.mediaFiles=[];
+	  	  await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
+		    mediaTtems.map(async (image) => {
+		        try { // Загружаем медиафайлы для продукта          
+			  console.log(image);
+		          item.mediaFiles.push({ url : image.media_key});
+		        } catch (mediaError) { // Логируем ошибку загрузки медиафайлов, но продолжаем обработку других продуктов          
+		          console.error(`Error fetching media for product_id ${item.productId}: ${mediaError.message}`);
+	        	  item.media = [];  // Если ошибка загрузки медиафайлов, оставляем пустой массив
+		        }
+	        	return item;
+		      })	
+		    );    
+
+
+	        } catch (mediaError) { // Логируем ошибку загрузки медиафайлов, но продолжаем обработку других продуктов          
+	          console.error(`Error fetching media for product_id ${item.productId}: ${mediaError.message}`);
+	          item.media = [];  // Если ошибка загрузки медиафайлов, оставляем пустой массив
+	        }
+        	return item;
+	      })	
+	    );    
         sendResponse(res, 200, { status: true, reviews});	
        } catch (error) {
         sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });

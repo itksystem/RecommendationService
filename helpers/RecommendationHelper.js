@@ -82,3 +82,18 @@ require('dotenv').config();
       });
     });
   };
+
+
+  exports.getReviewImages = (productId, userId) => {
+    return new Promise((resolve, reject) => {      
+      let result = db.query('SELECT * FROM product_reviews_media_storage WHERE product_id=? and user_id=?', [productId, userId], (err, result) => {
+      console.log(productId, userId);
+      console.log(result);
+        (err)
+        ? reject(err)
+        : resolve(result ? result : null)
+      });
+    });
+  };
+
+

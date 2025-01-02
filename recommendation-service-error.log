@@ -10,3 +10,4 @@
 {"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-29T10:34:15.028Z"}
 {"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-29T10:34:33.037Z"}
 {"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-29T10:34:54.106Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2025-01-02T12:58:56.354Z"}
