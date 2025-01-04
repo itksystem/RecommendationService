@@ -80,6 +80,21 @@ exports.getRating = async (req, res) => {
 };
 
 
+exports.setRating = async (req, res) => {          
+    try {
+        let userId = await authMiddleware.getUserId(req, res);
+        let productId = req.params?.productId;
+        let _rating = req.body?.rating;
+        if(!userId || !productId || !_rating) throw(422);               
+        let rating = await RecoHelper.setRating(productId, _rating, userId);
+        console.log(productId, rating, userId);
+        sendResponse(res, 200, { status: true, productId, rating : Number(_rating).toFixed(1)});	
+       } catch (error) {
+        sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
+    }
+};
+
+
 exports.getReviewCount = async (req, res) => {          
     try {
         let userId = await authMiddleware.getUserId(req, res);
@@ -131,3 +146,45 @@ exports.getReviews = async (req, res) => {
         sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
     }
 };
+
+
+exports.getReviewUser = async (req, res) => {          
+    try {
+        let userId = await authMiddleware.getUserId(req, res);
+        let productId = req.params.productId;
+        if(!userId || !productId) throw(422);               
+	console.log(productId, userId); 
+        let reviews = await RecoHelper.getReviewUser(productId, userId);
+	 const itemsWithMedia = await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
+	    reviews.map(async (item) => {
+	        try { // Загружаем медиафайлы для продукта          
+		  console.log(item);
+	          let mediaTtems = await await RecoHelper.getReviewImages(item.product_id, item.user_id ); 
+	          item.mediaFiles=[];
+	  	  await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
+		    mediaTtems.map(async (image) => {
+		        try { // Загружаем медиафайлы для продукта          
+			  console.log(image);
+		          item.mediaFiles.push({ url : image.media_key});
+		        } catch (mediaError) { // Логируем ошибку загрузки медиафайлов, но продолжаем обработку других продуктов          
+		          console.error(`Error fetching media for product_id ${item.productId}: ${mediaError.message}`);
+	        	  item.media = [];  // Если ошибка загрузки медиафайлов, оставляем пустой массив
+		        }
+	        	return item;
+		      })	
+		    );    
+
+
+	        } catch (mediaError) { // Логируем ошибку загрузки медиафайлов, но продолжаем обработку других продуктов          
+	          console.error(`Error fetching media for product_id ${item.productId}: ${mediaError.message}`);
+	          item.media = [];  // Если ошибка загрузки медиафайлов, оставляем пустой массив
+	        }
+        	return item;
+	      })	
+	    );    
+        sendResponse(res, 200, { status: true, reviews});	
+       } catch (error) {
+        sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
+    }
+};
+

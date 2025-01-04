@@ -11,3 +11,7 @@
 {"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-29T10:34:33.037Z"}
 {"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2024-12-29T10:34:54.106Z"}
 {"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2025-01-02T12:58:56.354Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2025-01-04T16:56:54.631Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2025-01-04T16:58:02.042Z"}
+{"code":500,"level":"error","message":"Внутренняя ошибка сервера.","service":"recommendation-service","timestamp":"2025-01-04T16:59:29.076Z"}
+{"code":422,"level":"error","message":"Ошибка валидации данных.","service":"recommendation-service","timestamp":"2025-01-04T17:01:49.392Z"}

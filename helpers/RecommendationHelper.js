@@ -58,6 +58,20 @@ require('dotenv').config();
     });
   };
 
+  exports.setRating = (productId, rating, userId) => {
+    return new Promise((resolve, reject) => {      
+      let result = db.query('INSERT INTO product_ratings (product_id, rating, user_id) values (?,?,?) ON DUPLICATE KEY UPDATE rating=?', [productId, rating, userId, rating], (err, result) => {
+      console.log(productId );
+      console.log(result);
+      console.log(err);
+        (err)
+        ? reject(false)
+        : resolve(true)
+      });
+    });
+  };
+
+
   /* найти рейтинг продукта по productId */
   exports.getReviewCount = (productId) => {
     return new Promise((resolve, reject) => {      
@@ -97,3 +111,13 @@ require('dotenv').config();
   };
 
 
+  exports.getReviewUser = (productId, userId) => {
+    return new Promise((resolve, reject) => {      
+      let result = db.query('SELECT * FROM product_reviews WHERE product_id=? and user_id=?', [productId, userId], (err, result) => {
+      console.log(err);
+        (err)
+        ? reject(err)
+        : resolve(result ? result : null)
+      });
+    });
+  };
