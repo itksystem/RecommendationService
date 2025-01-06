@@ -13,7 +13,7 @@ require('dotenv').config();
 
 const sendResponse = (res, statusCode, data) => {
     if(statusCode >= 400)
-         logger.error(data);
+    logger.error(data);
     res.status(statusCode).json(data);
 };
 
@@ -118,13 +118,14 @@ exports.getReviews = async (req, res) => {
 	    reviews.map(async (item) => {
 	        try { // Загружаем медиафайлы для продукта          
 		  console.log(item);
-	          let mediaTtems = await await RecoHelper.getReviewImages(item.product_id, item.user_id ); 
+//	          let mediaTtems = await RecoHelper.getReviewImages(item.product_id, item.user_id ); 
+	          let mediaTtems = await RecoHelper.getReviewImages(item.id); 
 	          item.mediaFiles=[];
 	  	  await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
 		    mediaTtems.map(async (image) => {
 		        try { // Загружаем медиафайлы для продукта          
 			  console.log(image);
-		          item.mediaFiles.push({ url : image.media_key});
+		          item.mediaFiles.push({ url : image.media_key, file_id: image.media_id});
 		        } catch (mediaError) { // Логируем ошибку загрузки медиафайлов, но продолжаем обработку других продуктов          
 		          console.error(`Error fetching media for product_id ${item.productId}: ${mediaError.message}`);
 	        	  item.media = [];  // Если ошибка загрузки медиафайлов, оставляем пустой массив
@@ -148,24 +149,25 @@ exports.getReviews = async (req, res) => {
 };
 
 
-exports.getReviewUser = async (req, res) => {          
+exports.getReview = async (req, res) => {          
     try {
         let userId = await authMiddleware.getUserId(req, res);
         let productId = req.params.productId;
         if(!userId || !productId) throw(422);               
 	console.log(productId, userId); 
-        let reviews = await RecoHelper.getReviewUser(productId, userId);
+        let reviews = await RecoHelper.getReview(productId, userId);
 	 const itemsWithMedia = await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
 	    reviews.map(async (item) => {
 	        try { // Загружаем медиафайлы для продукта          
 		  console.log(item);
-	          let mediaTtems = await await RecoHelper.getReviewImages(item.product_id, item.user_id ); 
+//	          let mediaTtems = await await RecoHelper.getReviewImages(item.product_id, item.user_id ); 
+	          let mediaTtems = await RecoHelper.getReviewImages(item.id); 
 	          item.mediaFiles=[];
 	  	  await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
 		    mediaTtems.map(async (image) => {
 		        try { // Загружаем медиафайлы для продукта          
 			  console.log(image);
-		          item.mediaFiles.push({ url : image.media_key});
+		          item.mediaFiles.push({ url : image.media_key, file_id: image.media_id});
 		        } catch (mediaError) { // Логируем ошибку загрузки медиафайлов, но продолжаем обработку других продуктов          
 		          console.error(`Error fetching media for product_id ${item.productId}: ${mediaError.message}`);
 	        	  item.media = [];  // Если ошибка загрузки медиафайлов, оставляем пустой массив
@@ -188,3 +190,55 @@ exports.getReviewUser = async (req, res) => {
     }
 };
 
+exports.setReview = async (req, res) => {          
+    try {
+        let userId = await authMiddleware.getUserId(req, res);
+        let productId = req.params.productId;
+        let {review} = req.body;
+        if(!userId || !productId || !review ) {
+	  console.error(productId, userId, review); 
+          logger.error(productId, userId, review);
+ 	  throw(422);               
+	}
+        let {files} = req.body;
+        let reviewId = await RecoHelper.setReview(productId, userId, review);
+        // сохраняем изображения
+        console.log(files);
+	if(files?.length > 0) 
+  	  await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
+	    files.map(async(file) => {
+	        try { 
+		  console.log(file);
+		  let storage  = 'pickmax.products';
+		  let bucket   = 'local';  
+	          let result = await RecoHelper.setReviewImage(reviewId, file.fileId, file.url, productId, userId, storage, bucket)
+	        } catch (mediaError) { // Логируем ошибку загрузки медиафайлов, но продолжаем обработку других продуктов          
+	          console.error(`Error fetching media for product_id ${productId}: ${mediaError.message}`);
+	        }
+	      })	
+  	   );
+        sendResponse(res, 200, { status: true });	
+       } catch (error) {
+        console.log(error);
+        sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
+    }
+};
+
+exports.deleteReviewImage = async (req, res) => {          
+    try {
+        let userId = await authMiddleware.getUserId(req, res);
+        let fileId = req.params.fileId;
+        if(!userId || !fileId ) {
+	  console.error(fileId, userId); 
+          logger.error(fileId, userId); 
+ 	  throw(422);               
+	}
+        let result = await RecoHelper.deleteReviewImage(fileId, userId);
+        if(!result) throw(403)
+        // сохраняем изображения
+        sendResponse(res, 200, { status: true });	
+       } catch (error) {
+        console.log(error);
+        sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
+    }
+};
