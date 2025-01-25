@@ -30,7 +30,7 @@ const sendResponse = (res, statusCode, data) => {
 
 exports.getLike = async (req, res) => {          
     try {
-        let userId = await authMiddleware.getUserId(req, res);
+        let userId = await authClient.getUserId(req, res);
         let productId = req.params.productId;
         if(!userId || !productId) throw(422);               
         let likes = await RecoHelper.getProductLikes(productId);
@@ -53,7 +53,7 @@ exports.getLike = async (req, res) => {
 
 exports.setLike = async (req, res) => {          
     try {
-        let userId = await authMiddleware.getUserId(req, res);
+        let userId = await authClient.getUserId(req, res);
         let {status} = req.body;
         let productId = req.params.productId;
         if(!userId || !productId ) throw(422);               
@@ -68,7 +68,7 @@ exports.setLike = async (req, res) => {
 
 exports.getRating = async (req, res) => {          
     try {
-        let userId = await authMiddleware.getUserId(req, res);
+        let userId = await authClient.getUserId(req, res);
         let productId = req.params.productId;
         if(!userId || !productId) throw(422);               
         let rating = await RecoHelper.getRating(productId);
@@ -82,7 +82,7 @@ exports.getRating = async (req, res) => {
 
 exports.setRating = async (req, res) => {          
     try {
-        let userId = await authMiddleware.getUserId(req, res);
+        let userId = await authClient.getUserId(req, res);
         let productId = req.params?.productId;
         let _rating = req.body?.rating;
         if(!userId || !productId || !_rating) throw(422);               
@@ -97,7 +97,7 @@ exports.setRating = async (req, res) => {
 
 exports.getReviewCount = async (req, res) => {          
     try {
-        let userId = await authMiddleware.getUserId(req, res);
+        let userId = await authClient.getUserId(req, res);
         let productId = req.params.productId;
         if(!userId || !productId) throw(422);               
         let reviewCount = await RecoHelper.getReviewCount(productId);
@@ -109,7 +109,7 @@ exports.getReviewCount = async (req, res) => {
 
 exports.getReviews = async (req, res) => {          
     try {
-        let userId = await authMiddleware.getUserId(req, res);
+        let userId = await authClient.getUserId(req, res);
         let productId = req.params.productId;
         if(!userId || !productId) throw(422);               
 	console.log(productId, userId); 
@@ -151,20 +151,22 @@ exports.getReviews = async (req, res) => {
 
 exports.getReview = async (req, res) => {          
     try {
-        let userId = await authMiddleware.getUserId(req, res);
+        let userId = await authClient.getUserId(req, res);
         let productId = req.params.productId;
         if(!userId || !productId) throw(422);               
 	console.log(productId, userId); 
         let reviews = await RecoHelper.getReview(productId, userId);
+         console.log(reviews);
+         if(reviews?.length > 0) {
 	 const itemsWithMedia = await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
 	    reviews.map(async (item) => {
 	        try { // Загружаем медиафайлы для продукта          
 		  console.log(item);
-//	          let mediaTtems = await await RecoHelper.getReviewImages(item.product_id, item.user_id ); 
 	          let mediaTtems = await RecoHelper.getReviewImages(item.id); 
 	          item.mediaFiles=[];
-	  	  await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
-		    mediaTtems.map(async (image) => {
+ 	 	  if(mediaTtems?.length > 0 )  	         
+ 	           await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
+		     mediaTtems?.map(async (image) => {
 		        try { // Загружаем медиафайлы для продукта          
 			  console.log(image);
 		          item.mediaFiles.push({ url : image.media_key, file_id: image.media_id});
@@ -184,15 +186,17 @@ exports.getReview = async (req, res) => {
         	return item;
 	      })	
 	    );    
-        sendResponse(res, 200, { status: true, reviews});	
+	 }
+        sendResponse(res, 200, { status: true, reviews : reviews || []});	
        } catch (error) {
+	logger.error(error);
         sendResponse(res, (Number(error) || 500), { code: (Number(error) || 500), message:  new CommonFunctionHelper().getDescriptionByCode((Number(error) || 500)) });
     }
 };
 
 exports.setReview = async (req, res) => {          
     try {
-        let userId = await authMiddleware.getUserId(req, res);
+        let userId = await authClient.getUserId(req, res);
         let productId = req.params.productId;
         let {review} = req.body;
         if(!userId || !productId || !review ) {
@@ -226,7 +230,7 @@ exports.setReview = async (req, res) => {
 
 exports.deleteReviewImage = async (req, res) => {          
     try {
-        let userId = await authMiddleware.getUserId(req, res);
+        let userId = await authClient.getUserId(req, res);
         let fileId = req.params.fileId;
         if(!userId || !fileId ) {
 	  console.error(fileId, userId); 

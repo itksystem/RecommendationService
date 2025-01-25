@@ -2,168 +2,179 @@ const amqp = require('amqplib');
 const db = require('openfsm-database-connection-producer');
 const { v4: uuidv4 } = require('uuid'); // Убедитесь, что установлен uuid версии 8
 const authMiddleware = require('openfsm-middlewares-auth-service');
+
+const SQL = require('common-recommendation-service').SQL;
+const MESSAGES = require('common-recommendation-service').MESSAGES;
+const LANGUAGE = 'RU';
+const logger = require('openfsm-logger-handler');
+
+
 require('dotenv').config();
 
    /* Сохранить лайк */
-   exports.setLike = (productId, userId, status = false) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query('INSERT INTO product_likes (product_id, user_id, status) values (?, ?, ?) ON DUPLICATE KEY UPDATE status=? where  1=1 and blocked is null and deleted is null', [productId, userId, status, status], (err, result) => {
-      console.log(result);
-      console.log(err);
-        (err)
-        ? reject(err)
-        : resolve(true);
+   exports.setLike = async (productId, userId, status = false) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.SET_LIKE, [productId, userId, status], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result ? true: false)
   };
 
   /* найти по productId */
-  exports.getProductLikes = (productId) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query('SELECT COUNT(product_id) as likes FROM product_likes WHERE product_id=?  and blocked is null and deleted is null', [productId], (err, result) => {
-      console.log(result);
-      console.log(err);
-        (err)
-        ? reject(err)
-        : resolve(result[0] ? result[0].likes : 0)
+  exports.getProductLikes = async (productId) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.GET_LIKES, [productId], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result?.rows[0].likes || 0)
   };
 
   /* найти like пользователя по productId */
-  exports.getLike = (userId, productId) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query('SELECT COUNT(user_id) as `like` FROM product_likes WHERE user_id=? and product_id=? and status=1  and blocked is null and deleted is null', [userId, productId], (err, result) => {
-      console.log(userId, productId);
-      console.log(result);
-      console.log(err);
-        (err)
-        ? reject(err)
-        : resolve(result[0] ? result[0].like : 0)
+  exports.getLike = async (userId, productId) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.GET_LIKE, [userId, productId], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result?.rows[0].like || 0)
   };
 
   /* найти рейтинг продукта по productId */
-  exports.getRating = (productId) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query('SELECT AVG(rating) as `rating` FROM product_ratings WHERE product_id=?  and blocked is null and deleted is null', [productId], (err, result) => {
-      console.log(productId );
-      console.log(result);
-      console.log(err);
-        (err)
-        ? reject(err)
-        : resolve(result[0] ? result[0].rating : 0)
+  exports.getRating = async (productId) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.GET_RATING, [productId], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result?.rows[0].rating || 0)
   };
 
-  exports.setRating = (productId, rating, userId) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query('INSERT INTO product_ratings (product_id, rating, user_id) values (?,?,?) ON DUPLICATE KEY UPDATE rating=?', [productId, rating, userId, rating], (err, result) => {
-      console.log(productId );
-      console.log(result);
-      console.log(err);
-        (err)
-        ? reject(false)
-        : resolve(true)
+  exports.setRating = async (productId, rating, userId) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.SET_RATING,  [productId, rating, userId], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result ? true : false)
   };
 
 
   /* найти рейтинг продукта по productId */
-  exports.getReviewCount = (productId) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query('SELECT count(id) as `reviewCount` FROM product_reviews WHERE product_id=?', [productId], (err, result) => {
-      console.log(productId );
-      console.log(result);
-      console.log(err);
-        (err)
-        ? reject(err)
-        : resolve(result[0] ? result[0].reviewCount : 0)
+  exports.getReviewCount = async (productId) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.GET_REVIEW_COUNT,  [productId], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result?.rows ? result?.rows[0].reviewCount : 0)
   };
 
-  exports.getReviews = (productId) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query(`
-	SELECT prw.*, pr.rating FROM product_reviews prw 
-	  left join product_ratings pr on (pr.product_id = prw.product_id and pr.user_id = prw.user_id )  
-	WHERE 1=1 
-	and prw.product_id=? and prw.blocked is null and prw.deleted is null`, [productId], (err, result) => {
-      console.log(err);
-        (err)
-        ? reject(err)
-        : resolve(result ? result : null)
+  exports.getReviews = async (productId) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.GET_REVIEWS,  [productId], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
-  };
-
-
-//  exports.getReviewImages = (productId, userId) => {
-  exports.getReviewImages = (reviewId) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query('SELECT * FROM product_reviews_media_storage WHERE review_id=? and blocked is null and deleted is null', [reviewId], (err, result) => {
-      console.log(reviewId);
-      console.log(result);
-        (err)
-        ? reject(err)
-        : resolve(result ? result : null)
-      });
-    });
+     });  
+    return (result?.rows ? result?.rows : null)
   };
 
 
-  exports.getReview = (productId, userId) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query(`
-	SELECT prw.*, pr.rating FROM product_reviews prw 
-	  left join product_ratings pr on (pr.product_id = prw.product_id and pr.user_id = prw.user_id )  
-	WHERE 1=1 
-	and prw.product_id=? and prw.user_id=? and prw.blocked is null and prw.deleted is null`,
-      [productId, userId], (err, result) => {
-      console.log(err);
-        (err)
-        ? reject(err)
-        : resolve(result ? result : null)
+  exports.getReviewImages = async (reviewId) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.GET_REVIEW_IMAGES,  [reviewId], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result?.rows ? result?.rows : null)
+  };
+  
+
+
+  exports.getReview = async  (productId, userId) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.GET_REVIEW,  [productId, userId], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
+      });
+     });  
+    return (result?.rows ? result?.rows : null)
   };
 
-  exports.setReview = (productId, userId, message) => {
-    return new Promise((resolve, reject) => {      
-      let result = db.query('INSERT INTO product_reviews (product_id, user_id, comment) values (?,?,?) ON DUPLICATE KEY UPDATE comment=?', [productId, userId, message, message], (err, result) => {
-      console.log(err);
-        (err)
-        ? reject(false)
-        : resolve(result.insertId)
+  exports.setReview = async (productId, userId, message) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.GET_REVIEW,  [productId, userId, message], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result?.rows ? result?.rows[0].id : null)
   };
 
 
-  exports.setReviewImage = (reviewId, mediaId, mediaKey, productId, userId, storage, bucket) => {
-    return new Promise((resolve, reject) => {      
-      let result  = db.query(`INSERT INTO product_reviews_media_storage (review_id, media_id, media_key, product_id, user_id, storage, bucket) VALUES (?,?,?,?,?,?,?)`, 
-	[reviewId, mediaId, mediaKey, productId, userId, storage, bucket ], (err, result) => {
-        (err)
-        ? reject(err)
-        : resolve(true)
+  exports.setReviewImage = async (reviewId, mediaId, mediaKey, productId, userId, storage, bucket) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.SET_REVIEW_IMAGE, [reviewId, mediaId, mediaKey, productId, userId, storage, bucket ], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result ? true : false)
   };
 
-  exports.deleteReviewImage = (fileId, userId) => {
-    return new Promise((resolve, reject) => {      
-      let result  = db.query(`UPDATE product_reviews_media_storage set deleted=NOW() where media_id=? and user_id=? and deleted is null`, [fileId, userId], (err, result) => {
-      console.log(result, err);
-        (err || (result.affectedRows == 0))
-        ? reject(false)
-        : resolve(true)
+  exports.deleteReviewImage = async (fileId, userId) => {
+    const result = await new Promise((resolve, reject) => {
+      db.query(SQL.RECOMMENDATION.DELETE_REVIEW_IMAGE,  [fileId, userId], (err, result) => {
+        if (err) {
+          logger.error(err);
+          return reject(err);
+        }
+        resolve(result); // Предполагается, что поле isConfirmed
       });
-    });
+     });  
+    return (result ? true : false)
   };
 
 
