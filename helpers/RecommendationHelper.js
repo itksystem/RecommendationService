@@ -139,7 +139,7 @@ require('dotenv').config();
 
   exports.setReview = async (productId, userId, message) => {
     const result = await new Promise((resolve, reject) => {
-      db.query(SQL.RECOMMENDATION.GET_REVIEW,  [productId, userId, message], (err, result) => {
+      db.query(SQL.RECOMMENDATION.SET_REVIEW,  [productId, userId, message], (err, result) => {
         if (err) {
           logger.error(err);
           return reject(err);
