@@ -9,7 +9,7 @@ const LANGUAGE = 'RU';
 const logger = require('openfsm-logger-handler');
 
 
-require('dotenv').config();
+require('dotenv').config({ path: '.env-recommendation-service' });
 
    /* Сохранить лайк */
    exports.setLike = async (productId, userId, status = false) => {

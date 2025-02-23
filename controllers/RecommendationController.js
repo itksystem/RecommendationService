@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 const AuthServiceClientHandler = require("openfsm-auth-service-client-handler");
 const authClient = new AuthServiceClientHandler();              // интерфейс для  связи с MC AuthService
 
-require('dotenv').config();
+require('dotenv').config({ path: '.env-recommendation-service' });
 
 
 const sendResponse = (res, statusCode, data) => {
@@ -161,7 +161,7 @@ exports.getReview = async (req, res) => {
 	 const itemsWithMedia = await Promise.all( // Асинхронно загружаем медиафайлы для каждого продукта
 	    reviews.map(async (item) => {
 	        try { // Загружаем медиафайлы для продукта          
-		  console.log(item);
+		      console.log(item);
 	          let mediaTtems = await RecoHelper.getReviewImages(item.id); 
 	          item.mediaFiles=[];
  	 	  if(mediaTtems?.length > 0 )  	         
